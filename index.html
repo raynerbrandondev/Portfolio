@@ -1,0 +1,2137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAYNER.BRANDON / Game Dev + Technical Artist</title>
+  <meta name="description" content="Senior Game Developer and Technical Artist. 3+ years at SavySoda. Shipping VR, mobile, and PC titles.">
+
+  <meta property="og:title" content="RAYNER.BRANDON / Game Dev + Technical Artist">
+  <meta property="og:description" content="Shipping games across PC, VR, and mobile. Senior Dev & Technical Artist at SavySoda.">
+  <meta property="og:type" content="website">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Rayner Brandon",
+    "jobTitle": "Senior Game Developer & Technical Artist",
+    "worksFor": { "@type": "Organization", "name": "SavySoda" },
+    "sameAs": ["https://waifugames.itch.io", "https://lilindie.itch.io"]
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ================================================
+       BASE / RESET
+    ================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0a;
+      --bg-2:      #111111;
+      --bg-3:      #161616;
+      --line:      #232323;
+      --line-2:    #2e2e2e;
+      --ink:       #ededed;
+      --muted:     #7d7d7d;
+      --dim:       #4a4a4a;
+      --faint:     #303030;
+
+      /* Single accent — warm CRT amber/orange. Used sparingly. */
+      --acc:       #ff7a1a;
+      --acc-soft:  rgba(255, 122, 26, 0.12);
+
+      /* Secondary accent — cool phosphor green. Live indicators only. */
+      --live:      #7eff8a;
+
+      --mono:      'IBM Plex Mono', ui-monospace, 'Menlo', monospace;
+      --display:   'Space Grotesk', 'IBM Plex Mono', ui-monospace, monospace;
+
+      --max:       1240px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.65;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Subtle CRT scanlines overlay — very low opacity, on the WHOLE page */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 200;
+      background-image: repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,0.012) 0px,
+        rgba(255,255,255,0.012) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      mix-blend-mode: overlay;
+    }
+
+    img { max-width: 100%; display: block; }
+    a { color: inherit; text-decoration: none; }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--line-2); }
+    ::-webkit-scrollbar-thumb:hover { background: var(--acc); }
+
+    ::selection { background: var(--acc); color: #000; }
+
+    .container {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* ================================================
+       UTILITY: BLINKING CURSOR
+    ================================================ */
+    .blink::after {
+      content: '█';
+      display: inline-block;
+      margin-left: 0.15em;
+      animation: blink 1s steps(2, end) infinite;
+      color: var(--acc);
+    }
+    @keyframes blink {
+      0%, 49%   { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    .live-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--live);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--live);
+      vertical-align: middle;
+      margin-right: 0.5em;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.35; }
+    }
+
+    /* ================================================
+       HEADER — full width, terminal status bar
+    ================================================ */
+    header {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 100;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      background: rgba(10, 10, 10, 0.4);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid transparent;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    header.menu-open { backdrop-filter: none; background: transparent; }
+    header.scrolled {
+      background: rgba(10, 10, 10, 0.92);
+      border-bottom-color: var(--line);
+    }
+
+    .brand {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+    .brand .acc { color: var(--acc); }
+    .brand .dim { color: var(--dim); }
+
+    nav.top {
+      display: flex;
+      align-items: center;
+      gap: 1.75rem;
+    }
+    nav.top a {
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      transition: color 0.15s;
+      position: relative;
+    }
+    nav.top a::before {
+      content: '[';
+      color: var(--dim);
+      margin-right: 0.15em;
+      transition: color 0.15s;
+    }
+    nav.top a::after {
+      content: ']';
+      color: var(--dim);
+      margin-left: 0.15em;
+      transition: color 0.15s;
+    }
+    nav.top a:hover { color: var(--ink); }
+    nav.top a:hover::before, nav.top a:hover::after { color: var(--acc); }
+
+    .hire {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: #000;
+      background: var(--acc);
+      padding: 0.45rem 0.9rem;
+      transition: background 0.15s, transform 0.15s;
+    }
+    .hire:hover {
+      background: #fff;
+      transform: translate(1px, -1px);
+    }
+    .hire::before { content: '> '; }
+    .nav-close { display: none; }
+
+    .li-btn {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      border: 1px solid var(--line-2);
+      padding: 0.45rem 0.9rem;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .li-btn:hover { color: var(--acc); border-color: var(--acc); }
+
+    .menu-btn {
+      display: none;
+      background: none;
+      border: 1px solid var(--line-2);
+      color: var(--ink);
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      padding: 0.4rem 0.7rem;
+      cursor: pointer;
+    }
+
+    /* ================================================
+       HERO — wireframe canvas + content
+    ================================================ */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: grid;
+      align-items: center;
+      padding: 7rem 2rem 5rem;
+      overflow: hidden;
+    }
+
+    /* Canvas backdrop */
+    #wire {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+
+    /* Subtle radial vignette so text stays readable */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 30% 50%, var(--bg) 10%, transparent 70%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .hero-grid {
+      position: relative;
+      z-index: 2;
+      max-width: var(--max);
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .hero-meta {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      align-items: center;
+    }
+    .hero-meta b { color: var(--ink); font-weight: 500; }
+
+    h1.title {
+      font-family: var(--display);
+      font-size: clamp(3rem, 9vw, 7.5rem);
+      font-weight: 700;
+      line-height: 0.9;
+      letter-spacing: -0.04em;
+      margin-bottom: 1.75rem;
+      color: var(--ink);
+    }
+    h1.title .row { display: block; }
+    h1.title .row.dim { color: var(--dim); }
+    h1.title .acc { color: var(--acc); }
+
+    .hero-sub {
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      color: var(--muted);
+      max-width: 520px;
+      margin-bottom: 2.25rem;
+      line-height: 1.7;
+    }
+    .hero-sub b { color: var(--ink); font-weight: 500; }
+    .hero-sub .acc { color: var(--acc); }
+
+    .hero-cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      transition: transform 0.15s, background 0.15s, color 0.15s, border-color 0.15s;
+      cursor: pointer;
+      border: 1px solid var(--line-2);
+      color: var(--ink);
+      background: transparent;
+    }
+    .btn:hover {
+      border-color: var(--acc);
+      color: var(--acc);
+      transform: translate(1px, -1px);
+    }
+    .btn.primary {
+      background: var(--acc);
+      color: #000;
+      border-color: var(--acc);
+    }
+    .btn.primary:hover {
+      background: var(--ink);
+      color: #000;
+      border-color: var(--ink);
+    }
+
+    /* RIGHT SIDE — terminal status box */
+    .term {
+      font-size: 0.72rem;
+      color: var(--ink);
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--line-2);
+      padding: 0;
+      max-width: 380px;
+      margin-left: auto;
+      align-self: stretch;
+      display: flex;
+      flex-direction: column;
+    }
+    .term-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.85rem;
+      border-bottom: 1px solid var(--line-2);
+      font-size: 0.65rem;
+      color: var(--dim);
+      letter-spacing: 0.05em;
+    }
+    .term-bar .dots {
+      display: inline-flex;
+      gap: 5px;
+    }
+    .term-bar .dots i {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: var(--faint);
+      display: block;
+    }
+    .term-body {
+      padding: 1rem 1rem 1.1rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .term-line {
+      display: block;
+      color: var(--muted);
+      line-height: 1.85;
+      font-size: 0.72rem;
+    }
+    .term-line .key   { color: var(--acc); }
+    .term-line .val   { color: var(--ink); }
+    .term-line .ok    { color: var(--live); }
+    .term-line .pmt   { color: var(--dim); }
+    .term-line.empty { height: 0.8em; }
+
+    .hero-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      margin-top: 2.5rem;
+      border-top: 1px solid var(--line-2);
+      padding-top: 1.5rem;
+    }
+    .hero-stat {
+      flex: 1;
+      min-width: 90px;
+      padding-right: 1.5rem;
+      border-right: 1px solid var(--line-2);
+      margin-right: 1.5rem;
+    }
+    .hero-stat:last-child {
+      border-right: none;
+      margin-right: 0;
+      padding-right: 0;
+    }
+    .hero-stat .s-num {
+      font-family: var(--display);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .hero-stat .s-num .acc { color: var(--acc); }
+    .hero-stat .s-lbl {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--dim);
+      letter-spacing: 0.1em;
+      margin-top: 0.3rem;
+    }
+
+    .scroll-cue {
+      position: absolute;
+      left: 50%;
+      bottom: 1.75rem;
+      transform: translateX(-50%);
+      z-index: 3;
+      font-size: 0.65rem;
+      color: var(--dim);
+      letter-spacing: 0.2em;
+      text-align: center;
+    }
+    .scroll-cue .arrow {
+      display: block;
+      margin-top: 0.4rem;
+      animation: bob 2s ease-in-out infinite;
+      color: var(--muted);
+    }
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); opacity: 0.8; }
+      50%       { transform: translateY(4px); opacity: 0.4; }
+    }
+
+    /* ================================================
+       MARQUEE / TICKER — between sections
+    ================================================ */
+    .ticker {
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: var(--bg-2);
+      overflow: hidden;
+      padding: 0.85rem 0;
+      white-space: nowrap;
+    }
+    .ticker-track {
+      display: inline-flex;
+      gap: 3rem;
+      animation: scroll-x 32s linear infinite;
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+    .ticker-track span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .ticker-track .acc { color: var(--acc); }
+    .ticker-track .sep { color: var(--dim); }
+    @keyframes scroll-x {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ================================================
+       SECTION BASE
+    ================================================ */
+    section { padding: 6rem 0; position: relative; }
+
+    .sec-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1.5rem;
+      align-items: end;
+      margin-bottom: 3rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .sec-tag {
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      color: var(--acc);
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+    .sec-tag::before { content: '// '; color: var(--dim); }
+
+    .sec-title {
+      font-family: var(--display);
+      font-size: clamp(1.75rem, 4vw, 2.6rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    .sec-meta {
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .sec-meta a { color: var(--acc); }
+    .sec-meta a:hover { color: var(--ink); }
+
+    /* ================================================
+       PROJECT INDEX — like a file listing
+    ================================================ */
+    .work-list {
+      display: flex;
+      flex-direction: column;
+      border-top: 1px solid var(--line);
+    }
+
+    .work-row {
+      display: grid;
+      grid-template-columns: 60px 1.4fr 1fr 100px;
+      gap: 2rem;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--line);
+      align-items: center;
+      transition: background 0.2s, padding 0.2s;
+      position: relative;
+      cursor: pointer;
+    }
+    .work-row:hover {
+      background: var(--bg-2);
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+    .work-row:hover .w-arrow { color: var(--acc); transform: translateX(4px); }
+    .work-row:hover .w-title { color: var(--acc); }
+
+    .w-num {
+      font-size: 0.72rem;
+      color: var(--dim);
+      letter-spacing: 0.05em;
+    }
+    .w-title {
+      font-family: var(--display);
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      transition: color 0.2s;
+    }
+    .w-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .w-tag {
+      font-size: 0.62rem;
+      padding: 0.2rem 0.55rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      border: 1px solid var(--line-2);
+    }
+    .w-tag.acc { color: var(--acc); border-color: var(--acc); }
+    .w-arrow {
+      font-size: 1.1rem;
+      color: var(--muted);
+      transition: color 0.2s, transform 0.2s;
+      text-align: right;
+      font-family: var(--mono);
+    }
+
+    /* DETAIL ROW — expandable feeling, currently always visible below */
+    /* Full-bleed banner: backdrop spans 100vw, content stays in container */
+    .work-detail {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 2.5rem 0;
+
+      /* Break out of parent .container so the backdrop is edge-to-edge */
+      width: 100vw;
+      max-width: 100vw;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      margin-top: -1px; /* collapse double border between stacked banners */
+    }
+
+    /* Inner content stays centered & constrained */
+    .work-detail-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    .work-detail.flip .work-detail-inner { grid-template-columns: 1fr 1.1fr; }
+    .work-detail.flip .w-img { order: 2; }
+
+    /* Banner background — uses the same project image as a heavily-treated backdrop */
+    .work-detail::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background-image: var(--bg-art);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: blur(28px) saturate(0.85);
+      opacity: 0.35;
+      transform: scale(1.1); /* hide blurred edges */
+    }
+    /* Dark gradient + scanline overlay so the foreground stays readable */
+    .work-detail::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background:
+        linear-gradient(
+          to right,
+          rgba(10,10,10,0.94) 0%,
+          rgba(10,10,10,0.78) 35%,
+          rgba(10,10,10,0.55) 100%
+        ),
+        repeating-linear-gradient(
+          0deg,
+          rgba(0,0,0,0.18) 0,
+          rgba(0,0,0,0.18) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+    }
+    .work-detail.flip::after {
+      background:
+        linear-gradient(
+          to left,
+          rgba(10,10,10,0.94) 0%,
+          rgba(10,10,10,0.78) 35%,
+          rgba(10,10,10,0.55) 100%
+        ),
+        repeating-linear-gradient(
+          0deg,
+          rgba(0,0,0,0.18) 0,
+          rgba(0,0,0,0.18) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+    }
+
+    .w-img {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 280px;
+      overflow: hidden;
+      border-radius: 4px;
+    }
+    .w-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+
+    .w-img-ph {
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      position: relative;
+    }
+    .w-img-ph .label {
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      color: var(--dim);
+    }
+    .w-img-ph .glyph {
+      font-family: var(--display);
+      font-size: 4rem;
+      font-weight: 700;
+      color: var(--line-2);
+      letter-spacing: -0.04em;
+    }
+
+    /* corner brackets removed — image floats on the banner backdrop */
+
+    .w-info h3 {
+      font-family: var(--display);
+      font-size: 1.6rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.4rem;
+      color: var(--ink);
+    }
+    .w-info .studio {
+      font-size: 0.7rem;
+      color: var(--acc);
+      letter-spacing: 0.1em;
+      margin-bottom: 1.25rem;
+    }
+    .w-info p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.75;
+      margin-bottom: 1.5rem;
+    }
+    .w-info p b { color: var(--ink); font-weight: 500; }
+
+    .w-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .w-stat .k {
+      font-size: 0.62rem;
+      color: var(--dim);
+      letter-spacing: 0.1em;
+      margin-bottom: 0.2rem;
+      display: block;
+    }
+    .w-stat .v {
+      font-family: var(--display);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .w-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--acc);
+      letter-spacing: 0.04em;
+      transition: gap 0.2s;
+    }
+    .w-link:hover { gap: 0.7rem; }
+    .w-link::before { content: '> '; color: var(--dim); }
+
+    /* ================================================
+       OTHER PROJECTS — small flash-era cards
+    ================================================ */
+    .other-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      max-width: 720px;
+    }
+    .other-card {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      transition: border-color 0.2s, transform 0.2s;
+      overflow: hidden;
+    }
+    .other-card:hover {
+      border-color: var(--acc);
+      transform: translate(0, -2px);
+    }
+    .other-thumb {
+      aspect-ratio: 4/3;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .other-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .other-thumb .glyph {
+      font-family: var(--display);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--line-2);
+      letter-spacing: -0.02em;
+    }
+    .other-body {
+      padding: 0.75rem 0.85rem 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .other-num {
+      font-size: 0.55rem;
+      color: var(--acc);
+      letter-spacing: 0.1em;
+    }
+    .other-title {
+      font-family: var(--display);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+    .other-desc {
+      font-size: 0.65rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .other-stat {
+      margin-top: 0.4rem;
+      padding-top: 0.4rem;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .other-stat .k {
+      font-size: 0.5rem;
+      color: var(--dim);
+      letter-spacing: 0.1em;
+    }
+    .other-stat .v {
+      font-family: var(--display);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--acc);
+    }
+
+    /* ================================================
+       INDIE GRID — game cards
+    ================================================ */
+    .indie-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .indie-card {
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      transition: border-color 0.2s, transform 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+    .indie-card:hover {
+      border-color: var(--acc);
+      transform: translate(0, -2px);
+    }
+    .indie-card:hover .ind-title { color: var(--acc); }
+
+    .ind-thumb {
+      aspect-ratio: 630/500;  /* native itch.io cover ratio */
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ind-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease, opacity 0.3s ease;
+      position: relative;
+      z-index: 2;
+    }
+    .indie-card:hover .ind-thumb img { transform: scale(1.03); }
+    .ind-thumb .glyph {
+      font-family: var(--display);
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: var(--line-2);
+      letter-spacing: -0.04em;
+    }
+    .ind-thumb::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 122, 26, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 122, 26, 0.04) 1px, transparent 1px);
+      background-size: 16px 16px;
+      pointer-events: none;
+      z-index: 2;
+    }
+    /* Crosshair corner brackets on thumbs */
+    .ind-thumb::before {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      pointer-events: none;
+      z-index: 3;
+      background:
+        linear-gradient(to right,  var(--acc) 0, var(--acc) 1px, transparent 1px) 0 0/10px 1px no-repeat,
+        linear-gradient(to right,  var(--acc) 0, var(--acc) 1px, transparent 1px) 100% 0/10px 1px no-repeat,
+        linear-gradient(to right,  var(--acc) 0, var(--acc) 1px, transparent 1px) 0 100%/10px 1px no-repeat,
+        linear-gradient(to right,  var(--acc) 0, var(--acc) 1px, transparent 1px) 100% 100%/10px 1px no-repeat,
+        linear-gradient(to bottom, var(--acc) 0, var(--acc) 1px, transparent 1px) 0 0/1px 10px no-repeat,
+        linear-gradient(to bottom, var(--acc) 0, var(--acc) 1px, transparent 1px) 100% 0/1px 10px no-repeat,
+        linear-gradient(to bottom, var(--acc) 0, var(--acc) 1px, transparent 1px) 0 100%/1px 10px no-repeat,
+        linear-gradient(to bottom, var(--acc) 0, var(--acc) 1px, transparent 1px) 100% 100%/1px 10px no-repeat;
+      opacity: 0.7;
+    }
+
+    .ind-body {
+      padding: 1.1rem 1.25rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .ind-num {
+      font-size: 0.62rem;
+      color: var(--dim);
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+    .ind-title {
+      font-family: var(--display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 0.4rem;
+      transition: color 0.2s;
+    }
+    .ind-studio {
+      font-size: 0.62rem;
+      color: var(--acc);
+      letter-spacing: 0.1em;
+      margin-bottom: 0.7rem;
+    }
+    .ind-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 0.9rem;
+      flex: 1;
+    }
+    .ind-link {
+      font-size: 0.7rem;
+      color: var(--ink);
+      letter-spacing: 0.05em;
+      border-top: 1px solid var(--line);
+      padding-top: 0.75rem;
+      margin-top: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: color 0.2s, gap 0.2s;
+    }
+    .ind-link:hover { color: var(--acc); gap: 0.6rem; }
+    .ind-link::before { content: '$'; color: var(--dim); margin-right: 0.2em; }
+
+    .indie-card.ph {
+      border-style: dashed;
+      border-color: var(--faint);
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+      min-height: 280px;
+      text-align: center;
+      color: var(--dim);
+    }
+    .indie-card.ph .glyph {
+      font-family: var(--display);
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--faint);
+      margin-bottom: 0.6rem;
+    }
+    .indie-card.ph p { font-size: 0.7rem; line-height: 1.6; color: var(--muted); }
+    .indie-card.ph small { font-size: 0.62rem; color: var(--dim); display: block; margin-top: 0.4rem; }
+
+    /* ================================================
+       ART GRID
+    ================================================ */
+    .art-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    .art-tile {
+      aspect-ratio: 1/1;
+      position: relative;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      overflow: hidden;
+      transition: border-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .art-tile:hover { border-color: var(--acc); }
+    .art-tile:hover .art-overlay { opacity: 1; }
+
+    .art-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .art-tile:hover img { transform: scale(1.04); }
+
+    .art-tile .num {
+      font-family: var(--display);
+      font-size: 4rem;
+      font-weight: 700;
+      color: var(--faint);
+      transition: color 0.2s;
+    }
+    .art-tile:hover .num { color: var(--line-2); }
+
+    .art-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 10, 10, 0.92);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 1rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .art-overlay .ttl {
+      font-family: var(--display);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.2rem;
+    }
+    .art-overlay .lnk {
+      font-size: 0.65rem;
+      color: var(--acc);
+      letter-spacing: 0.08em;
+    }
+    .art-overlay .lnk::before { content: '> '; color: var(--dim); }
+
+    /* ================================================
+       ABOUT
+    ================================================ */
+    #about { background: var(--bg-2); }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .about-card {
+      position: sticky;
+      top: 6rem;
+      border: 1px solid var(--line);
+      background: var(--bg);
+    }
+    .about-card .av {
+      aspect-ratio: 1/1;
+      background:
+        radial-gradient(circle at 30% 30%, var(--bg-3), var(--bg)),
+        var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      border-bottom: 1px solid var(--line);
+    }
+    .about-card .av .glyph {
+      font-family: var(--display);
+      font-size: 8rem;
+      font-weight: 700;
+      color: var(--line-2);
+      letter-spacing: -0.04em;
+    }
+    .about-card .av .note {
+      position: absolute;
+      bottom: 0.6rem;
+      left: 0.7rem;
+      font-size: 0.6rem;
+      color: var(--dim);
+      letter-spacing: 0.1em;
+    }
+    .about-card .info {
+      padding: 1.1rem 1.25rem;
+    }
+    .about-card .info .nm {
+      font-family: var(--display);
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.2rem;
+    }
+    .about-card .info .role {
+      font-size: 0.7rem;
+      color: var(--acc);
+      letter-spacing: 0.08em;
+      margin-bottom: 1rem;
+    }
+    .about-card .info .links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .about-card .info .links a {
+      font-size: 0.72rem;
+      color: var(--muted);
+      padding: 0.35rem 0;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      transition: color 0.15s;
+    }
+    .about-card .info .links a:hover { color: var(--acc); }
+    .about-card .info .links a span:last-child { color: var(--dim); }
+    .about-card .info .links a:hover span:last-child { color: var(--acc); }
+
+    .bio { font-size: 0.92rem; color: var(--muted); line-height: 1.85; }
+    .bio p + p { margin-top: 1rem; }
+    .bio b { color: var(--ink); font-weight: 500; }
+    .bio .acc { color: var(--acc); }
+
+    .skills-block {
+      margin-top: 2.5rem;
+    }
+    .skills-block h4 {
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      color: var(--acc);
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    .skills-block h4::before { content: '// '; color: var(--dim); }
+
+    .skills-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.45rem;
+      margin-bottom: 2rem;
+    }
+    .skill-row {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-size: 0.82rem;
+      color: var(--ink);
+      padding: 0.3rem 0;
+    }
+    .skill-row::before {
+      content: '▸';
+      color: var(--acc);
+      font-size: 0.65rem;
+    }
+
+    .stack-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+    .stack-tag {
+      font-size: 0.65rem;
+      padding: 0.3rem 0.6rem;
+      color: var(--ink);
+      border: 1px solid var(--line-2);
+      letter-spacing: 0.05em;
+    }
+
+    /* ================================================
+       CONTACT
+    ================================================ */
+    #contact {
+      padding: 8rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .contact-inner {
+      max-width: 680px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .contact-inner .sec-tag { margin-bottom: 1rem; }
+    .contact-title {
+      font-family: var(--display);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 1.25rem;
+    }
+    .contact-title .acc { color: var(--acc); }
+    .contact-sub {
+      font-size: 0.95rem;
+      color: var(--muted);
+      line-height: 1.75;
+      margin-bottom: 2.25rem;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .contact-btns {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .contact-foot {
+      font-size: 0.7rem;
+      color: var(--dim);
+      letter-spacing: 0.1em;
+      margin-top: 1rem;
+    }
+
+    /* ================================================
+       FOOTER
+    ================================================ */
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.7rem;
+      color: var(--dim);
+      letter-spacing: 0.05em;
+    }
+    footer a { color: var(--muted); transition: color 0.15s; }
+    footer a:hover { color: var(--acc); }
+    footer .right { display: flex; gap: 1.5rem; }
+
+    /* ================================================
+       REVEAL
+    ================================================ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ================================================
+       RESPONSIVE
+    ================================================ */
+    @media (max-width: 980px) {
+      .hero-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .term { margin-left: 0; max-width: 100%; }
+      .work-row { grid-template-columns: 40px 1fr 80px; }
+      .work-row .w-tags { display: none; }
+      .work-detail, .work-detail.flip { grid-template-columns: 1fr; gap: 2rem; }
+      .work-detail.flip .w-img { order: 0; }
+      .indie-grid { grid-template-columns: repeat(2, 1fr); }
+      .art-grid { grid-template-columns: repeat(3, 1fr); }
+      .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .about-card { position: static; max-width: 320px; }
+    }
+
+    @media (max-width: 640px) {
+      header { padding: 0.85rem 1.25rem; }
+      nav.top { display: none; }
+      nav.top.open {
+        display: flex;
+        position: fixed;
+        inset: 0;
+        background: rgba(10,10,10,0.97);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        z-index: 101;
+      }
+      nav.top.open a { font-size: 1rem; }
+      .menu-btn { display: block; }
+      .li-btn { display: none; }
+      .nav-close {
+        display: block;
+        position: absolute;
+        top: 1rem;
+        right: 1.25rem;
+        background: none;
+        border: 1px solid var(--line-2);
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.1em;
+        padding: 0.4rem 0.7rem;
+        cursor: pointer;
+      }
+
+      .work-detail-inner {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 0 1.25rem;
+      }
+      .work-detail.flip .work-detail-inner { grid-template-columns: 1fr; }
+      .work-detail.flip .w-img { order: 0; }
+      .w-img { height: 200px; }
+
+      .hero { padding: 6rem 1.25rem 4rem; }
+      h1.title { font-size: clamp(2.5rem, 13vw, 4rem); }
+      .hero-cta .btn { flex: 1; justify-content: center; }
+      .indie-grid { grid-template-columns: 1fr; }
+      .art-grid { grid-template-columns: repeat(2, 1fr); }
+      .w-stats { grid-template-columns: 1fr; }
+      .sec-head { grid-template-columns: 1fr; }
+      .sec-meta { text-align: left; }
+      section { padding: 4.5rem 0; }
+      .container { padding: 0 1.25rem; }
+    }
+
+    /* prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+      #wire { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ========================================================
+     HEADER
+======================================================== -->
+<header id="hdr">
+  <div class="brand">
+    <span class="acc">▣</span> RAYNER<span class="dim">.</span>BRANDON<span class="dim"> / GAMEDEV+TECHART</span>
+  </div>
+
+  <nav class="top" id="nav">
+    <button class="nav-close" id="navClose" aria-label="Close menu">✕ CLOSE</button>
+    <a href="#featured">featured</a>
+    <a href="#catalogue">catalogue</a>
+    <a href="#prototypes">prototypes</a>
+    <a href="#about">about</a>
+    <a href="#contact">contact</a>
+  </nav>
+
+  <div style="display:flex;gap:0.75rem;align-items:center;">
+    <a href="https://www.linkedin.com/in/rayner-brandon-7683751b5/" target="_blank" rel="noopener" class="li-btn">LINKEDIN ↗</a>
+    <a href="mailto:raynerbrandon.dev@gmail.com" class="hire">HIRE_ME</a>
+    <button class="menu-btn" id="menuBtn" aria-label="Menu">MENU</button>
+  </div>
+</header>
+
+
+<!-- ========================================================
+     HERO  +  WIREFRAME 3D BACKGROUND
+======================================================== -->
+<section class="hero">
+  <canvas id="wire" aria-hidden="true"></canvas>
+
+  <div class="hero-grid">
+    <div>
+      <div class="hero-meta">
+        <span><span class="live-dot"></span><b>OPEN</b> for hire</span>
+        <span>LOC: <b>AU</b></span>
+        <span>EXP: <b>3+ yrs</b></span>
+      </div>
+
+      <h1 class="title">
+        <span class="row">RAYNER</span>
+        <span class="row">BRANDON<span class="acc">.</span></span>
+      </h1>
+
+      <p class="hero-sub">
+        <b>Senior Game Developer &amp; Technical Artist</b> at <span class="acc">SavySoda</span>. I prototype fast, ship commercially, and push how games look and feel — from VR archery, to MMO starship battles.
+      </p>
+
+      <div class="hero-cta">
+        <a href="#work" class="btn primary">VIEW_WORK <span aria-hidden="true">→</span></a>
+        <a href="#contact" class="btn">GET_IN_TOUCH</a>
+        <a href="https://waifugames.itch.io" target="_blank" rel="noopener" class="btn">ITCH.IO ↗</a>
+      </div>
+
+    </div>
+
+    <!-- TERMINAL STATUS BLOCK -->
+    <aside class="term" aria-label="Status">
+      <div class="term-bar">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span>~/status.log</span>
+      </div>
+      <div class="term-body">
+        <span class="term-line"><span class="pmt">$</span> whoami</span>
+        <span class="term-line"><span class="val">rayner_brandon</span> <span class="pmt">// senior_dev + tech_art</span></span>
+        <span class="term-line empty"></span>
+        <span class="term-line"><span class="pmt">$</span> core_skills.log</span>
+        <span class="term-line"><span class="key">›</span> <span class="val">unity</span> <span class="pmt">· c# · blender · git</span></span>
+        <span class="term-line"><span class="key">›</span> <span class="val">shader_graph</span> <span class="pmt">· shaderlab · urp · vfx_graph</span></span>
+        <span class="term-line"><span class="key">›</span> <span class="val">tech_art</span> <span class="pmt">· particles · vfx · baking · rigging</span></span>
+        <span class="term-line"><span class="key">›</span> <span class="val">vr_dev</span> <span class="pmt">· mobile · renderdoc · optimisation</span></span>
+        <span class="term-line empty"></span>
+        <span class="term-line"><span class="pmt">$</span> status</span>
+        <span class="term-line"><span class="ok">● open</span> <span class="pmt">// available_for_hire = true</span></span>
+        <span class="term-line"><span class="pmt">$</span> <span class="blink"></span></span>
+      </div>
+    </aside>
+  </div>
+
+  <div class="scroll-cue">
+    SCROLL
+    <span class="arrow">▼</span>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     TICKER
+======================================================== -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span><span class="acc">▣</span> UNITY</span><span class="sep">/</span>
+    <span>HLSL · SHADERLAB</span><span class="sep">/</span>
+    <span><span class="acc">▣</span> QUEST 2/3 VR</span><span class="sep">/</span>
+    <span>BLENDER</span><span class="sep">/</span>
+    <span><span class="acc">▣</span> C# · UNITY API</span><span class="sep">/</span>
+    <span>VFX · PARTICLES</span><span class="sep">/</span>
+    <span><span class="acc">▣</span> PIXEL ART</span><span class="sep">/</span>
+    <span>3D MODELLING</span><span class="sep">/</span>
+    <span><span class="acc">▣</span> GAME PROTOTYPING</span><span class="sep">/</span>
+    <span>RAPID R&amp;D</span><span class="sep">/</span>
+    <span><span class="acc">▣</span> WEBGL · BROWSER</span><span class="sep">/</span>
+    <span>ANIMATION</span><span class="sep">/</span>
+    <!-- duplicate for seamless loop -->
+    <span><span class="acc">▣</span> UNITY</span><span class="sep">/</span>
+    <span>HLSL · SHADERLAB</span><span class="sep">/</span>
+    <span><span class="acc">▣</span> QUEST 2/3 VR</span><span class="sep">/</span>
+    <span>BLENDER</span><span class="sep">/</span>
+    <span><span class="acc">▣</span> C# · UNITY API</span><span class="sep">/</span>
+    <span>VFX · PARTICLES</span><span class="sep">/</span>
+    <span><span class="acc">▣</span> PIXEL ART</span><span class="sep">/</span>
+    <span>3D MODELLING</span><span class="sep">/</span>
+    <span><span class="acc">▣</span> GAME PROTOTYPING</span><span class="sep">/</span>
+    <span>RAPID R&amp;D</span><span class="sep">/</span>
+    <span><span class="acc">▣</span> WEBGL · BROWSER</span><span class="sep">/</span>
+    <span>ANIMATION</span><span class="sep">/</span>
+  </div>
+</div>
+
+
+<!-- ========================================================
+     PROFESSIONAL WORK
+======================================================== -->
+<section id="featured">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div>
+        <span class="sec-tag">SECTION_01 / FEATURED</span>
+        <h2 class="sec-title">Featured Projects</h2>
+      </div>
+      <div class="sec-meta">
+        ITEMS: 03 &nbsp;·&nbsp; STUDIOS: <a href="https://www.savysoda.com/" target="_blank" rel="noopener">SAVYSODA</a> · <a href="https://lilindie.itch.io" target="_blank" rel="noopener">LILINDIE</a>
+      </div>
+    </div>
+
+    <!-- INDEX LIST -->
+    <div class="work-list">
+      <a class="work-row reveal" href="#work-ps2">
+        <div class="w-num">001</div>
+        <div class="w-title">Pixel Starships 2</div>
+        <div class="w-tags"><span class="w-tag acc">STEAM</span><span class="w-tag">MMO · STRATEGY</span><span class="w-tag">PC · MAC · MOBILE</span></div>
+        <div class="w-arrow">→</div>
+      </a>
+      <a class="work-row reveal" href="#work-archery">
+        <div class="w-num">002</div>
+        <div class="w-title">Archery Pro</div>
+        <div class="w-tags"><span class="w-tag acc">QUEST 2/3</span><span class="w-tag">VR · PVP MULTIPLAYER</span><span class="w-tag">4.4★ · 537 REVIEWS</span></div>
+        <div class="w-arrow">→</div>
+      </a>
+      <a class="work-row reveal" href="#work-party">
+        <div class="w-num">003</div>
+        <div class="w-title">Party Ships</div>
+        <div class="w-tags"><span class="w-tag acc">PC</span><span class="w-tag">ACTION PARTY · LOCAL CO-OP</span><span class="w-tag">IN DEV</span></div>
+        <div class="w-arrow">→</div>
+      </a>
+    </div>
+
+    <div style="height: 4rem;"></div>
+
+    <!-- DETAIL: PS2 -->
+    <div class="work-detail reveal" id="work-ps2" style="--bg-art: url('images/PixelStarships2.jpg');">
+      <div class="work-detail-inner">
+        <div class="w-img">
+          <img
+            src="images/PixelStarships2.jpg"
+            alt="Pixel Starships 2 — MMO starship strategy RPG on Steam"
+            loading="lazy"
+          >
+        </div>
+        <div class="w-info">
+          <div class="studio">// SAVYSODA · STEAM EARLY ACCESS</div>
+          <h3>Pixel Starships 2</h3>
+          <p>
+            A massively multiplayer starship-building strategy RPG. <b>Technical art lead</b> — rewrote shaders in HLSL &amp; Shader Graph, ported the project to URP, built automated baking &amp; rigging pipelines for skin and weapon systems.
+          </p>
+          <div class="w-stats">
+            <div class="w-stat"><span class="k">PLATFORM</span><span class="v">PC · MAC · MOBILE</span></div>
+            <div class="w-stat"><span class="k">GENRE</span><span class="v">MMO STRATEGY</span></div>
+            <div class="w-stat"><span class="k">STATUS</span><span class="v">EARLY ACCESS</span></div>
+          </div>
+          <a href="https://play.google.com/store/apps/details?id=com.savysoda.pss2.android&hl=en_AU" target="_blank" rel="noopener" class="w-link">google play <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAIL: ARCHERY PRO (flipped) -->
+    <div class="work-detail flip reveal" id="work-archery" style="--bg-art: url('images/ArcheryPro.jpeg');">
+      <div class="work-detail-inner">
+        <div class="w-img">
+          <img src="images/ArcheryPro.jpeg" alt="Archery Pro — VR archery on Meta Quest" loading="lazy">
+        </div>
+        <div class="w-info">
+          <div class="studio">// SAVYSODA · META STORE</div>
+          <h3>Archery Pro</h3>
+          <p>
+            A VR archery experience for Quest 2, 3, and Pro. <b>Rated 4.4★ across 537 reviews.</b> Served as <b>Producer</b> and led the technical side — getting the game running on Quest 2, driving aggressive performance optimisation, creating baking procedures, improving shaders and topology, and devising a full VRoid pipeline.
+          </p>
+          <div class="w-stats">
+            <div class="w-stat"><span class="k">PLATFORM</span><span class="v">QUEST 2/3</span></div>
+            <div class="w-stat"><span class="k">RATING</span><span class="v">4.4★ / 537</span></div>
+            <div class="w-stat"><span class="k">PRICE</span><span class="v">FREE</span></div>
+          </div>
+          <a href="https://www.meta.com/en-gb/experiences/archery-pro/4441808439261428/" target="_blank" rel="noopener" class="w-link">view on meta store <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAIL: PARTY SHIPS -->
+    <div class="work-detail reveal" id="work-party" style="--bg-art: url('images/PartyShips.png');">
+      <div class="work-detail-inner">
+        <div class="w-img">
+          <img src="images/PartyShips.png" alt="Party Ships — PC naval party game in development by lilindie" loading="lazy">
+        </div>
+        <div class="w-info">
+          <div class="studio">// LILINDIE · PC · IN DEVELOPMENT</div>
+          <h3>Party Ships</h3>
+          <p>
+            A fast-paced naval action game in active development under the <b>lilindie</b> banner. Led full development — built around super clean modular systems with bespoke developer tools for adjusting each module, keeping the design space flexible and iteration fast.
+          </p>
+          <div class="w-stats">
+            <div class="w-stat"><span class="k">PLATFORM</span><span class="v">PC</span></div>
+            <div class="w-stat"><span class="k">GENRE</span><span class="v">ACTION PARTY</span></div>
+            <div class="w-stat"><span class="k">STATUS</span><span class="v">IN DEV</span></div>
+          </div>
+          <a href="https://lilindie.itch.io" target="_blank" rel="noopener" class="w-link">follow lilindie <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ========================================================
+     GAMES CATALOGUE
+======================================================== -->
+<section id="catalogue" style="background: var(--bg-2);">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div>
+        <span class="sec-tag">SECTION_02 / FULL CATALOGUE</span>
+        <h2 class="sec-title">Games Catalogue</h2>
+      </div>
+      <div class="sec-meta">
+        <a href="https://waifugames.itch.io" target="_blank" rel="noopener">WAIFUGAMES</a> &nbsp;·&nbsp;
+        <a href="https://lilindie.itch.io" target="_blank" rel="noopener">LILINDIE</a> &nbsp;·&nbsp; JOCARA
+      </div>
+    </div>
+
+    <!-- SECTION: SHIPPED COMMERCIAL -->
+    <div style="margin-bottom: 3rem;">
+      <div style="font-size: 0.7rem; letter-spacing: 0.18em; color: var(--acc); margin-bottom: 1.25rem;">// SHIPPED COMMERCIAL TITLES</div>
+      <div class="indie-grid">
+
+        <a href="https://pixelstarships.com/" target="_blank" rel="noopener" class="indie-card reveal">
+          <div class="ind-thumb">
+            <img src="images/PixelStarships.jpg" alt="Pixel Starships cover art" loading="lazy" onerror="this.style.display='none';this.parentElement.insertAdjacentHTML('beforeend','<span class=\'glyph\'>PS</span>');">
+          </div>
+          <div class="ind-body">
+            <div class="ind-num">— SAVYSODA / SHIPPED</div>
+            <div class="ind-title">Pixel Starships</div>
+            <div class="ind-studio">// MMO · SYSTEMS · MULTIPLAYER</div>
+            <p class="ind-desc">Commercial MMO with persistent universe, PvP, crew progression, and live ops. Improved shader logic and performance across the project.</p>
+            <span class="ind-link">pixelstarships.com ↗</span>
+          </div>
+        </a>
+
+        <a href="https://play.google.com/store/apps/details?id=com.savysoda.millionairetycoonworld.android&hl=en_AU" target="_blank" rel="noopener" class="indie-card reveal">
+          <div class="ind-thumb" style="background: radial-gradient(ellipse at 40% 60%, #0d1a10, var(--bg-3));">
+            <img src="images/MillionaireTycoonWorld.jpg" alt="Millionaire Tycoon World cover art" loading="lazy" onerror="this.style.display='none';this.parentElement.insertAdjacentHTML('beforeend','<span class=\'glyph\'>MTW</span>');">
+          </div>
+          <div class="ind-body">
+            <div class="ind-num">— SAVYSODA / SHIPPED</div>
+            <div class="ind-title">Millionaire Tycoon World</div>
+            <div class="ind-studio">// TYCOON · GPS · REAL-TIME</div>
+            <p class="ind-desc">Location-based real estate empire builder. Drove geometry and shader optimisation across the full project. 41k+ downloads.</p>
+            <span class="ind-link">google play ↗</span>
+          </div>
+        </a>
+
+        <a href="https://apps.apple.com/ph/app/choc-frog/id6738042787" target="_blank" rel="noopener" class="indie-card reveal">
+          <div class="ind-thumb" style="background: radial-gradient(ellipse at 70% 30%, #1a1408, var(--bg-3));">
+            <img src="images/ChocFrog.png" alt="Choc Frog cover art" loading="lazy" onerror="this.style.display='none';this.parentElement.insertAdjacentHTML('beforeend','<span class=\'glyph\'>CF</span>');">
+          </div>
+          <div class="ind-body">
+            <div class="ind-num">— LILINDIE / SHIPPED</div>
+            <div class="ind-title">Choc Frog</div>
+            <div class="ind-studio">// iOS · CASUAL · SOLE DEV</div>
+            <p class="ind-desc">Sole developer — handled engine, gameplay, UI, and full App Store submission end-to-end.</p>
+            <span class="ind-link">app store ↗</span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- SECTION: JAM & INDIE -->
+    <div style="margin-bottom: 3rem;">
+      <div style="font-size: 0.7rem; letter-spacing: 0.18em; color: var(--acc); margin-bottom: 1.25rem;">// JAM & INDIE</div>
+      <div class="indie-grid">
+
+        <a href="https://lilindie.itch.io/dreamcatcher" target="_blank" rel="noopener" class="indie-card reveal">
+          <div class="ind-thumb">
+            <img src="images/DreamCatcher.png" alt="Dream Catcher cover art" loading="lazy">
+                      </div>
+          <div class="ind-body">
+            <div class="ind-num">— LILINDIE / SHIPPED</div>
+            <div class="ind-title">Dream Catcher</div>
+            <div class="ind-studio">// SURVIVAL HORROR · ENDLESS · SOLE DEV</div>
+            <p class="ind-desc">Sole developer — cool endless survival horror with handcrafted monochrome atmosphere and tight escalating tension.</p>
+            <span class="ind-link">play on itch.io ↗</span>
+          </div>
+        </a>
+
+        <a href="https://lilindie.itch.io/fullharvest" target="_blank" rel="noopener" class="indie-card reveal">
+          <div class="ind-thumb">
+            <img src="images/FullHarvest.png" alt="Full Harvest cover art" loading="lazy">
+                      </div>
+          <div class="ind-body">
+            <div class="ind-num">— LILINDIE / SHIPPED</div>
+            <div class="ind-title">Full Harvest</div>
+            <div class="ind-studio">// FARMING SIM · SOLE DEV</div>
+            <p class="ind-desc">Sole developer — clean modular farming logic system driving crop growth, inventory, and progression layered with wave shooter mechanics.</p>
+            <span class="ind-link">play on itch.io ↗</span>
+          </div>
+        </a>
+
+        <a href="https://waifugames.itch.io/untold" target="_blank" rel="noopener" class="indie-card reveal">
+          <div class="ind-thumb">
+            <img src="images/Untold.png" alt="UNTOLD cover art" loading="lazy">
+                      </div>
+          <div class="ind-body">
+            <div class="ind-num">— WAIFUGAMES / SHIPPED</div>
+            <div class="ind-title">UNTOLD</div>
+            <div class="ind-studio">// ADVENTURE</div>
+            <p class="ind-desc">Space adventure game with polished level design and tight traversal mechanics.</p>
+            <span class="ind-link">play on itch.io ↗</span>
+          </div>
+        </a>
+
+        <a href="https://waifugames.itch.io/space-crab-psyco" target="_blank" rel="noopener" class="indie-card reveal">
+          <div class="ind-thumb">
+            <img src="images/Space Crab Phycho.png" alt="Space Crab Psycho cover art" loading="lazy">
+                      </div>
+          <div class="ind-body">
+            <div class="ind-num">— WAIFUGAMES / SHIPPED</div>
+            <div class="ind-title">Space Crab Psycho</div>
+            <div class="ind-studio">// WAVE SHOOTER · GAME FEEL</div>
+            <p class="ind-desc">Frantic wave shooter with responsive, punchy gameplay mechanics and escalating difficulty.</p>
+            <span class="ind-link">play on itch.io ↗</span>
+          </div>
+        </a>
+
+        <a href="https://octopuspunch.itch.io/sacrifeyes" target="_blank" rel="noopener" class="indie-card reveal">
+          <div class="ind-thumb">
+            <img src="images/Sacrifeyes.png" alt="Sacrifeyes cover art" loading="lazy">
+                      </div>
+          <div class="ind-body">
+            <div class="ind-num">— GAME JAM / JAMSEPTICEYE</div>
+            <div class="ind-title">Sacrifeyes</div>
+            <div class="ind-studio">// NUMBERS · TECHNICAL ART</div>
+            <p class="ind-desc">Numbers-based game jam entry — responsible for the full technical art pipeline including shaders, VFX, and visual systems.</p>
+            <span class="ind-link">play on itch.io ↗</span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- SECTION: FLASH ARCHIVE -->
+    <div>
+      <div style="font-size: 0.7rem; letter-spacing: 0.18em; color: var(--dim); margin-bottom: 1.25rem;">// FLASH ARCHIVE (2000s-2010s)</div>
+      <div class="indie-grid">
+
+        <div class="indie-card reveal">
+          <div class="ind-thumb">
+            <img src="images/StickFigureSmash.png" alt="Stick Figure Smash 3 cover art" loading="lazy" onerror="this.style.display='none';this.parentElement.insertAdjacentHTML('beforeend','<span class=\'glyph\'>SFS3</span>');">
+          </div>
+          <div class="ind-body">
+            <div class="ind-num">— JOCARA / FLASH</div>
+            <div class="ind-title">Stick Figure Smash 3</div>
+            <div class="ind-studio">// ACTION · BROWSER · SOLE CODER</div>
+            <p class="ind-desc">Wrote a custom velocity Verlet physics engine from scratch powering the ragdoll and collision simulation. 10M+ plays.</p>
+            <span class="ind-link" style="color:var(--dim);">10M+ plays</span>
+          </div>
+        </div>
+
+        <div class="indie-card reveal">
+          <div class="ind-thumb">
+            <img src="images/JailBreak.png" alt="Jail Break cover art" loading="lazy" onerror="this.style.display='none';this.parentElement.insertAdjacentHTML('beforeend','<span class=\'glyph\'>JB</span>');">
+          </div>
+          <div class="ind-body">
+            <div class="ind-num">— JOCARA / FLASH</div>
+            <div class="ind-title">Jail Break</div>
+            <div class="ind-studio">// POINT & CLICK · ADVENTURE</div>
+            <p class="ind-desc">Short point-and-click adventure with a tight core loop and sustained player engagement. 1M+ plays.</p>
+            <span class="ind-link" style="color:var(--dim);">1M+ plays</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     PROTOTYPES
+======================================================== -->
+<section id="prototypes">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div>
+        <span class="sec-tag">SECTION_03 / TECH ART + CONCEPTS</span>
+        <h2 class="sec-title">Prototypes & Technical Art</h2>
+      </div>
+      <div class="sec-meta"><a href="https://raynerbrandon.artstation.com/" target="_blank" rel="noopener">VIEW FULL GALLERY ↗</a></div>
+    </div>
+
+    <div class="art-grid">
+      <a href="https://www.artstation.com/artwork/BkN29z" target="_blank" rel="noopener" class="art-tile reveal">
+        <img src="images/Piece1.jpg" alt="ArtStation piece 01" loading="lazy">
+        <div class="art-overlay">
+          <div class="ttl">Artwork 01</div>
+          <div class="lnk">view on artstation</div>
+        </div>
+      </a>
+      <a href="https://www.artstation.com/artwork/98dRKQ" target="_blank" rel="noopener" class="art-tile reveal">
+        <img src="images/Piece2.jpg" alt="ArtStation piece 02" loading="lazy">
+        <div class="art-overlay">
+          <div class="ttl">Artwork 02</div>
+          <div class="lnk">view on artstation</div>
+        </div>
+      </a>
+      <a href="https://www.artstation.com/artwork/4XqnAq" target="_blank" rel="noopener" class="art-tile reveal">
+        <img src="images/Piece3.jpg" alt="ArtStation piece 03" loading="lazy">
+        <div class="art-overlay">
+          <div class="ttl">Artwork 03</div>
+          <div class="lnk">view on artstation</div>
+        </div>
+      </a>
+      <a href="https://www.artstation.com/artwork/mz2BX1" target="_blank" rel="noopener" class="art-tile reveal">
+        <img src="images/Piece4.jpg" alt="ArtStation piece 04" loading="lazy">
+        <div class="art-overlay">
+          <div class="ttl">Artwork 04</div>
+          <div class="lnk">view on artstation</div>
+        </div>
+      </a>
+      <a href="https://www.artstation.com/artwork/lRX2AO" target="_blank" rel="noopener" class="art-tile reveal">
+        <img src="images/Piece5.jpg" alt="ArtStation piece 05" loading="lazy">
+        <div class="art-overlay">
+          <div class="ttl">Artwork 05</div>
+          <div class="lnk">view on artstation</div>
+        </div>
+      </a>
+      <div class="art-tile reveal" style="border-style: dashed; border-color: var(--faint); display: flex; align-items: center; justify-content: center; text-align: center; padding: 1rem;">
+        <span style="color: var(--dim); font-size: 0.7rem; letter-spacing: 0.15em; line-height: 1.6;">INQUIRE FOR<br>MORE PROTOTYPES</span>
+      </div>
+    </div>
+
+    <div style="margin-top: 2.5rem; font-size: 0.7rem; color: var(--dim); text-align: center; letter-spacing: 0.1em;">
+      // ARCHIVE EXPANDING — MORE CONCEPT WORK + PROTOTYPES AVAILABLE ON REQUEST
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     ABOUT
+======================================================== -->
+<section id="about">
+  <div class="container">
+    <div class="sec-head reveal">
+      <div>
+        <span class="sec-tag">SECTION_04 / SYS_INFO</span>
+        <h2 class="sec-title">About Me</h2>
+      </div>
+      <div class="sec-meta">UPTIME: 3+ YRS &nbsp;·&nbsp; STATUS: <span style="color: var(--live);">● ONLINE</span></div>
+    </div>
+
+    <div class="about-grid">
+
+      <aside class="about-card reveal">
+        <div class="av">
+          <img src="images/Portrait.jpg" alt="Rayner Brandon" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">
+        </div>
+        <div class="info">
+          <div class="nm">Rayner Brandon</div>
+          <div class="role">SR. DEV / TECH ART</div>
+          <div class="links">
+            <a href="mailto:raynerbrandon.dev@gmail.com"><span>email</span><span>contact →</span></a>
+            <a href="https://www.linkedin.com/in/rayner-brandon-7683751b5/" target="_blank" rel="noopener"><span>linkedin</span><span>profile ↗</span></a>
+            <a href="https://raynerbrandon.artstation.com/" target="_blank" rel="noopener"><span>artstation</span><span>portfolio ↗</span></a>
+          </div>
+        </div>
+      </aside>
+
+      <div class="reveal">
+        <div class="bio">
+          <p>I'm a <b>Senior Game Developer and Technical Artist</b> with over 3 years of professional experience at <span class="acc">SavySoda</span> — an Australian studio shipping titles across PC, mobile, and VR. My work lives at the crossroads of engineering and visual craft: I prototype rapidly, build performant art pipelines, and care deeply about how a game <b>feels</b> to play.</p>
+
+          <p>I've shipped <b>VR experiences for Quest 2/3</b> (Archery Pro — 4.4★ across 537 reviews), contributed to a <b>massively multiplayer strategy RPG</b> (Pixel Starships 2 on Steam), and developed multiple commercial mobile titles. Alongside professional work I build indie games under <b>lilindie</b> — a sibling collab spanning top-down adventures, space shooters, and survival horror.</p>
+
+          <p>I'm passionate about <b>game prototyping</b> and <b>technical art</b> — shaders, VFX, procedural systems, and squeezing every drop of visual quality out of an engine. I've been making games since the Flash era and I'm not slowing down. Now I'm looking for an ambitious studio building <span class="acc">immersive, social, or technically innovative</span> experiences — that's where I want to bring this energy next.</p>
+        </div>
+
+        <div class="skills-block">
+          <h4>core_skills.txt</h4>
+          <div class="skills-list">
+            <div class="skill-row">Game Prototyping</div>
+            <div class="skill-row">Technical Art</div>
+            <div class="skill-row">VR / XR Development</div>
+            <div class="skill-row">Shader Development</div>
+            <div class="skill-row">VFX &amp; Particles</div>
+            <div class="skill-row">2D &amp; 3D Art</div>
+            <div class="skill-row">Pixel Art</div>
+            <div class="skill-row">Game &amp; Systems Design</div>
+            <div class="skill-row">Mobile Development</div>
+            <div class="skill-row">Animation</div>
+            <div class="skill-row">Art Direction</div>
+            <div class="skill-row">Rapid R&amp;D</div>
+          </div>
+
+          <h4>tools_and_platforms.txt</h4>
+          <div class="stack-tags">
+            <span class="stack-tag">Unity</span>
+            <span class="stack-tag">Blender</span>
+            <span class="stack-tag">Photoshop</span>
+            <span class="stack-tag">Aseprite</span>
+            <span class="stack-tag">C#</span>
+            <span class="stack-tag">HLSL · ShaderLab</span>
+            <span class="stack-tag">Quest 2/3</span>
+            <span class="stack-tag">Steam / PC</span>
+            <span class="stack-tag">iOS / Android</span>
+            <span class="stack-tag">WebGL</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     CONTACT
+======================================================== -->
+<section id="contact">
+  <div class="contact-inner reveal">
+    <span class="sec-tag" style="display:inline-block;">SECTION_05 / END_TRANSMISSION</span>
+    <h2 class="contact-title">Let's build something <span class="acc">great.</span></h2>
+    <p class="contact-sub">
+      I'm actively seeking opportunities at forward-thinking game studios. Whether you're building the next big VR world, an ambitious multiplayer title, or something entirely new — I'd love to talk.
+    </p>
+    <div class="contact-btns">
+      <a href="mailto:raynerbrandon.dev@gmail.com" class="btn primary">SEND_EMAIL →</a>
+      <a href="https://www.linkedin.com/in/rayner-brandon-7683751b5/" target="_blank" rel="noopener" class="btn">LINKEDIN ↗</a>
+      <a href="https://raynerbrandon.artstation.com/" target="_blank" rel="noopener" class="btn">ARTSTATION ↗</a>
+    </div>
+    <div class="contact-foot">BASED IN AU &nbsp;·&nbsp; OPEN TO REMOTE</div>
+  </div>
+</section>
+
+
+<!-- ========================================================
+     FOOTER
+======================================================== -->
+<footer>
+  <div>© 2026 RAYNER BRANDON</div>
+  <div class="right">
+    <a href="https://waifugames.itch.io" target="_blank" rel="noopener">waifugames</a>
+    <a href="https://lilindie.itch.io" target="_blank" rel="noopener">lilindie</a>
+    <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑ TOP</a>
+  </div>
+</footer>
+
+
+<!-- ========================================================
+     SCRIPTS
+======================================================== -->
+<script>
+/* ==========================================================
+   1) WIREFRAME ICOSAHEDRON — pure 2D canvas, ~30 edges
+   ----------------------------------------------------------
+   - DPR-aware
+   - paused when offscreen + when document.hidden
+   - respects prefers-reduced-motion
+========================================================== */
+(function () {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) return;
+
+  const cv  = document.getElementById('wire');
+  const ctx = cv.getContext('2d', { alpha: true });
+
+  const PHI = (1 + Math.sqrt(5)) / 2;
+
+  // 12 vertices of an icosahedron
+  const V = [
+    [-1,  PHI, 0], [1,  PHI, 0], [-1, -PHI, 0], [1, -PHI, 0],
+    [0, -1,  PHI], [0, 1,  PHI], [0, -1, -PHI], [0, 1, -PHI],
+    [PHI, 0, -1], [PHI, 0, 1], [-PHI, 0, -1], [-PHI, 0, 1]
+  ];
+  // 30 edges
+  const E = [
+    [0,1],[0,5],[0,7],[0,10],[0,11],
+    [1,5],[1,7],[1,8],[1,9],
+    [2,3],[2,4],[2,6],[2,10],[2,11],
+    [3,4],[3,6],[3,8],[3,9],
+    [4,5],[4,9],[4,11],
+    [5,9],[5,11],
+    [6,7],[6,8],[6,10],
+    [7,8],[7,10],
+    [8,9],[10,11]
+  ];
+
+  let w = 0, h = 0, dpr = 1;
+  let cx = 0, cy = 0, scale = 1;
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = cv.getBoundingClientRect();
+    w = rect.width;
+    h = rect.height;
+    cv.width  = Math.floor(w * dpr);
+    cv.height = Math.floor(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Position the shape on the right side, larger on wide screens
+    cx = w * 0.72;
+    cy = h * 0.5;
+    scale = Math.min(w, h) * 0.28;
+    if (w < 980) {
+      cx = w * 0.5;
+      cy = h * 0.5;
+      scale = Math.min(w, h) * 0.32;
+    }
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Pre-allocate projected vertex array
+  const P = new Array(V.length);
+  for (let i = 0; i < V.length; i++) P[i] = [0, 0];
+
+  let ax = 0.4, ay = 0;
+  let running = true;
+  let visible = true;
+
+  function step(t) {
+    if (!running) return;
+    if (visible && !document.hidden) {
+      ax += 0.0035;
+      ay += 0.0055;
+
+      const cosX = Math.cos(ax), sinX = Math.sin(ax);
+      const cosY = Math.cos(ay), sinY = Math.sin(ay);
+
+      // Project all vertices once
+      for (let i = 0; i < V.length; i++) {
+        const v = V[i];
+        // rotate around Y
+        let nx = cosY * v[0] + sinY * v[2];
+        let nz = -sinY * v[0] + cosY * v[2];
+        // rotate around X
+        let ny = cosX * v[1] - sinX * nz;
+        nz     = sinX * v[1] + cosX * nz;
+        // simple perspective
+        const persp = 1 / (3.2 - nz * 0.35);
+        P[i][0] = cx + nx * scale * persp;
+        P[i][1] = cy + ny * scale * persp;
+        P[i][2] = nz; // store for shading
+      }
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Draw edges in a single Path2D
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(255, 122, 26, 0.55)'; // amber accent
+
+      ctx.beginPath();
+      for (let i = 0; i < E.length; i++) {
+        const a = P[E[i][0]];
+        const b = P[E[i][1]];
+        ctx.moveTo(a[0], a[1]);
+        ctx.lineTo(b[0], b[1]);
+      }
+      ctx.stroke();
+
+      // Draw vertex dots — small, white-ish
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      for (let i = 0; i < P.length; i++) {
+        ctx.fillRect(P[i][0] - 1.5, P[i][1] - 1.5, 3, 3);
+      }
+    }
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+
+  // Pause when hero is offscreen (saves battery on long pages)
+  const io = new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting;
+  }, { threshold: 0 });
+  io.observe(cv);
+})();
+
+
+/* ==========================================================
+   2) HEADER scroll state
+========================================================== */
+(function () {
+  const hdr = document.getElementById('hdr');
+  const onScroll = () => hdr.classList.toggle('scrolled', window.scrollY > 30);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+
+
+/* ==========================================================
+   3) MOBILE menu
+========================================================== */
+(function () {
+  const btn = document.getElementById('menuBtn');
+  const nav = document.getElementById('nav');
+  const hdr = document.getElementById('hdr');
+  const closeBtn = document.getElementById('navClose');
+  if (!btn || !nav) return;
+  function closeMenu() {
+    nav.classList.remove('open');
+    hdr.classList.remove('menu-open');
+    document.body.style.overflow = '';
+    btn.textContent = 'MENU';
+  }
+  if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+  btn.addEventListener('click', () => {
+    const open = nav.classList.toggle('open');
+    hdr.classList.toggle('menu-open', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+    btn.textContent = open ? 'CLOSE' : 'MENU';
+  });
+  nav.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      nav.classList.remove('open');
+      hdr.classList.remove('menu-open');
+      document.body.style.overflow = '';
+      btn.textContent = 'MENU';
+    });
+  });
+})();
+
+
+/* ==========================================================
+   4) Reveal-on-scroll, with stagger inside grids
+========================================================== */
+(function () {
+  const els = document.querySelectorAll('.reveal');
+  document.querySelectorAll('.indie-grid, .art-grid, .work-list').forEach(g => {
+    g.querySelectorAll('.reveal').forEach((el, i) => {
+      el.style.transitionDelay = `${i * 70}ms`;
+    });
+  });
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+  els.forEach(el => io.observe(el));
+})();
+</script>
+</body>
+</html>
